@@ -1,0 +1,28 @@
+name: CI/CD Docker Build
+
+# Esto indica que el workflow SOLO se disparará al hacer un Pull Request a 'main'
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    # La máquina virtual que GitHub nos prestará para ejecutar esto
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el código del repositorio
+        uses: actions/checkout@v3
+
+      - name: Iniciar sesión en Docker Hub
+        # Usamos los secrets que configuraste en el paso 1
+        run: echo "${{ secrets.PASSWORD_DOCKERHUB }}" | docker login -u "${{ secrets.USER_DOCKERHUB }}" --password-stdin
+
+      - name: Construir la imagen de Docker
+        # Construye la imagen con la etiqueta de tu usuario
+        run: docker build -t ${{ secrets.USER_DOCKERHUB }}/consalseros:latest .
+
+      - name: Subir la imagen a Docker Hub
+        # Empuja la imagen al repositorio público
+        run: docker push ${{ secrets.USER_DOCKERHUB }}/consalseros:latest
